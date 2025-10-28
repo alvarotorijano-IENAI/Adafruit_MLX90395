@@ -44,16 +44,36 @@ void setup(void)
 }
 
 void loop(void) {
-
-
   /* Get a new sensor event, normalized to uTesla */
   sensors_event_t event; 
   sensor.getEvent(&event);
+  
   /* Display the results (magnetic field is measured in uTesla) */
   Serial.print("X: "); Serial.print(event.magnetic.x);
   Serial.print(" \tY: "); Serial.print(event.magnetic.y); 
   Serial.print(" \tZ: "); Serial.print(event.magnetic.z); 
   Serial.println(" uTesla ");
 
+  /* Read and display temperature */
+  float temperature = sensor.readTemperature();
+  if (!isnan(temperature)) {
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.println(" °C");
+  } else {
+    Serial.println("Error reading temperature");
+  }
+
+  /* Alternative: Read magnetic field and temperature together */
+  float x, y, z, temp;
+  if (sensor.readDataWithTemp(&x, &y, &z, &temp)) {
+    Serial.print("Combined reading - X: "); Serial.print(x);
+    Serial.print(" Y: "); Serial.print(y);
+    Serial.print(" Z: "); Serial.print(z);
+    Serial.print(" Temp: "); Serial.print(temp);
+    Serial.println(" °C");
+  }
+
+  Serial.println("---");
   delay(500);
 }

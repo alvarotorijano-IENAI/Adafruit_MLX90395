@@ -51,7 +51,10 @@ public:
   bool exitMode(void);
   bool startSingleMeasurement(void);
   bool readMeasurement(float *x, float *y, float *z);
+  bool readMeasurementWithTemp(float *x, float *y, float *z, float *temperature);
   bool readData(float *x, float *y, float *z);
+  bool readDataWithTemp(float *x, float *y, float *z, float *temperature);
+  float readTemperature(void);
 
   mlx90393_osr_t getOSR(void);
   bool setOSR(mlx90393_osr_t osrval);

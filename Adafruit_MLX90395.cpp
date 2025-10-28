@@ -89,6 +89,25 @@ bool Adafruit_MLX90395::readData(float *x, float *y, float *z) {
 }
 
 /**
+ * Performs a single X/Y/Z conversion and returns the results including temperature.
+ *
+ * @param x     Pointer to where the 'x' value should be stored.
+ * @param y     Pointer to where the 'y' value should be stored.
+ * @param z     Pointer to where the 'z' value should be stored.
+ * @param temperature Pointer to where the temperature value should be stored.
+ *
+ * @return True if the operation succeeded, otherwise false.
+ */
+bool Adafruit_MLX90395::readDataWithTemp(float *x, float *y, float *z, float *temperature) {
+  if (!startSingleMeasurement())
+    return false;
+  while (!readMeasurementWithTemp(x, y, z, temperature))
+    delay(1);
+
+  return true;
+}
+
+/**
  * Reads data from data register & returns the results.
  *
  * @param x     Pointer to where the 'x' value should be stored.
@@ -131,6 +150,72 @@ bool Adafruit_MLX90395::readMeasurement(float *x, float *y, float *z) {
   *z *= gainMultipliers[_gain] * _uTLSB;
 
   return true;
+}
+
+/**
+ * Reads data from data register & returns the results including temperature.
+ *
+ * @param x     Pointer to where the 'x' value should be stored.
+ * @param y     Pointer to where the 'y' value should be stored.
+ * @param z     Pointer to where the 'z' value should be stored.
+ * @param temperature Pointer to where the temperature value should be stored.
+ *
+ * @return True on command success
+ */
+bool Adafruit_MLX90395::readMeasurementWithTemp(float *x, float *y, float *z, float *temperature) {
+  uint8_t tx[1] = {0x80}; // Read memory command
+  uint8_t rx[12] = {0};   // status, crc, X16, Y16, Z16, T16, V16
+
+  /* Perform the transaction. */
+  if (i2c_dev) {
+    if (!i2c_dev->write_then_read(tx, 1, rx, 12)) {
+      return false;
+    }
+  }
+
+  // check status
+  // Serial.print("Status: "); Serial.println(rx[0], HEX);
+  if (rx[0] != MLX90395_STATUS_DRDY) {
+    return false;
+  }
+
+  int16_t xi, yi, zi, ti;
+
+  // Convert data to uT and float.
+  xi = (rx[2] << 8) | rx[3];
+  yi = (rx[4] << 8) | rx[5];
+  zi = (rx[6] << 8) | rx[7];
+  ti = (rx[8] << 8) | rx[9];  // Temperature data
+
+  *x = xi;
+  *y = yi;
+  *z = zi;
+
+  // multiply by gain & LSB
+  *x *= gainMultipliers[_gain] * _uTLSB;
+  *y *= gainMultipliers[_gain] * _uTLSB;
+  *z *= gainMultipliers[_gain] * _uTLSB;
+
+  // Convert temperature: MLX9039x temperature conversion formula (datasheet)
+  // T(°C) = 25 + (Traw - 46244) / 45.2
+  *temperature = ((float)ti) / 256.0f + 25.0f;
+
+  return true;
+}
+
+/**
+ * Reads only the temperature from the sensor.
+ *
+ * @return Temperature in Celsius, or NAN if error
+ */
+float Adafruit_MLX90395::readTemperature(void) {
+  float x, y, z, temperature;
+  
+  if (readDataWithTemp(&x, &y, &z, &temperature)) {
+    return temperature;
+  }
+  
+  return NAN;
 }
 
 /**
