@@ -197,8 +197,7 @@ bool Adafruit_MLX90395::readMeasurementWithTemp(float *x, float *y, float *z, fl
   *z *= gainMultipliers[_gain] * _uTLSB;
 
   // Convert temperature: MLX9039x temperature conversion formula (datasheet)
-  // T(°C) = 25 + (Traw - 46244) / 45.2
-  *temperature = ((float)ti) / 256.0f + 25.0f;
+  *temperature = ((float)ti) / 50.0f;
 
   return true;
 }
