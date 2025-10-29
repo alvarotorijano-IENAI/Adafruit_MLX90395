@@ -71,13 +71,19 @@ bool Adafruit_MLX90395::_init(void) {
 }
 
 /**
- * Performs a single X/Y/Z conversion and returns the results.
+ * @brief Performs a complete measurement cycle and returns magnetic field data
+ * 
+ * This function initiates a single measurement on all three axes (X, Y, Z) and 
+ * waits for the data to be ready before reading the magnetic field measurements.
+ * It combines startSingleMeasurement() and readMeasurement() into a single convenient call.
  *
- * @param x     Pointer to where the 'x' value should be stored.
- * @param y     Pointer to where the 'y' value should be stored.
- * @param z     Pointer to where the 'z' value should be stored.
+ * @param x Pointer to where the X-axis magnetic field value will be stored (microtesla)
+ * @param y Pointer to where the Y-axis magnetic field value will be stored (microtesla)
+ * @param z Pointer to where the Z-axis magnetic field value will be stored (microtesla)
  *
- * @return True if the operation succeeded, otherwise false.
+ * @return True if the measurement and read operation succeeded, false otherwise
+ * 
+ * @note This function blocks until data is ready (polling with delay)
  */
 bool Adafruit_MLX90395::readData(float *x, float *y, float *z) {
   if (!startSingleMeasurement())
@@ -89,14 +95,21 @@ bool Adafruit_MLX90395::readData(float *x, float *y, float *z) {
 }
 
 /**
- * Performs a single X/Y/Z conversion and returns the results including temperature.
+ * @brief Performs a complete measurement cycle and returns magnetic field and temperature
+ * 
+ * This function initiates a single measurement on all three axes (X, Y, Z) and 
+ * waits for the data to be ready before reading both the magnetic field measurements 
+ * and the internal temperature of the sensor. It combines startSingleMeasurement() 
+ * and readMeasurementWithTemp() into a single convenient call.
  *
- * @param x     Pointer to where the 'x' value should be stored.
- * @param y     Pointer to where the 'y' value should be stored.
- * @param z     Pointer to where the 'z' value should be stored.
- * @param temperature Pointer to where the temperature value should be stored.
+ * @param x Pointer to where the X-axis magnetic field value will be stored (microtesla)
+ * @param y Pointer to where the Y-axis magnetic field value will be stored (microtesla)
+ * @param z Pointer to where the Z-axis magnetic field value will be stored (microtesla)
+ * @param temperature Pointer to where the temperature value will be stored (Celsius)
  *
- * @return True if the operation succeeded, otherwise false.
+ * @return True if the measurement and read operation succeeded, false otherwise
+ * 
+ * @note This function blocks until data is ready (polling with delay)
  */
 bool Adafruit_MLX90395::readDataWithTemp(float *x, float *y, float *z, float *temperature) {
   if (!startSingleMeasurement())
@@ -108,13 +121,20 @@ bool Adafruit_MLX90395::readDataWithTemp(float *x, float *y, float *z, float *te
 }
 
 /**
- * Reads data from data register & returns the results.
+ * @brief Reads magnetic field data from the sensor data register
+ * 
+ * This function reads the data register of the MLX90395 sensor and returns 
+ * the magnetic field measurements on all three axes (X, Y, Z). The measurements 
+ * are converted from raw sensor values to microtesla (µT) units.
  *
- * @param x     Pointer to where the 'x' value should be stored.
- * @param y     Pointer to where the 'y' value should be stored.
- * @param z     Pointer to where the 'z' value should be stored.
+ * @param x Pointer to where the X-axis magnetic field value will be stored (microtesla)
+ * @param y Pointer to where the Y-axis magnetic field value will be stored (microtesla)
+ * @param z Pointer to where the Z-axis magnetic field value will be stored (microtesla)
  *
- * @return True on command success
+ * @return True if the read operation was successful, false otherwise
+ * 
+ * @note The function checks for DRDY (Data Ready) status before reading data
+ * @note Raw values are multiplied by gain multipliers and LSB conversion factors
  */
 bool Adafruit_MLX90395::readMeasurement(float *x, float *y, float *z) {
   uint8_t tx[1] = {0x80}; // Read memory command
@@ -153,14 +173,22 @@ bool Adafruit_MLX90395::readMeasurement(float *x, float *y, float *z) {
 }
 
 /**
- * Reads data from data register & returns the results including temperature.
+ * @brief Reads magnetic field data and temperature from the sensor register
+ * 
+ * This function reads the data register of the MLX90395 sensor and returns 
+ * the magnetic field measurements on all three axes (X, Y, Z) along with 
+ * the internal temperature reading. The measurements are converted from raw 
+ * sensor values to physical units (microtesla for magnetic field, Celsius for temperature).
  *
- * @param x     Pointer to where the 'x' value should be stored.
- * @param y     Pointer to where the 'y' value should be stored.
- * @param z     Pointer to where the 'z' value should be stored.
- * @param temperature Pointer to where the temperature value should be stored.
+ * @param x Pointer to where the X-axis magnetic field value will be stored (microtesla)
+ * @param y Pointer to where the Y-axis magnetic field value will be stored (microtesla)
+ * @param z Pointer to where the Z-axis magnetic field value will be stored (microtesla)
+ * @param temperature Pointer to where the temperature value will be stored (Celsius)
  *
- * @return True on command success
+ * @return True if the read operation was successful, false otherwise
+ * 
+ * @note The function waits for DRDY (Data Ready) status before reading data
+ * @note Temperature conversion: T(°C) = raw_value / 50.0
  */
 bool Adafruit_MLX90395::readMeasurementWithTemp(float *x, float *y, float *z, float *temperature) {
   uint8_t tx[1] = {0x80}; // Read memory command
@@ -203,9 +231,18 @@ bool Adafruit_MLX90395::readMeasurementWithTemp(float *x, float *y, float *z, fl
 }
 
 /**
- * Reads only the temperature from the sensor.
+ * @brief Reads only the temperature from the MLX90395 sensor
+ * 
+ * This function performs a complete measurement cycle and returns only the 
+ * temperature reading, discarding the magnetic field measurements. This is 
+ * useful when you only need temperature data and want to minimize processing.
  *
- * @return Temperature in Celsius, or NAN if error
+ * @return Temperature in Celsius if successful, or NAN (Not a Number) if 
+ *         an error occurred during the read operation
+ * 
+ * @note This function internally calls readDataWithTemp() and discards the 
+ *       magnetic field data. For efficiency, consider using readDataWithTemp() 
+ *       if you need both magnetic field and temperature readings.
  */
 float Adafruit_MLX90395::readTemperature(void) {
   float x, y, z, temperature;
