@@ -9,6 +9,7 @@
 
 #define MLX90395_STATUS_RESET 0x02
 #define MLX90395_STATUS_SMMODE 0x20
+#define MLX90395_STATUS_CMMODE 0x80
 #define MLX90395_STATUS_DRDY 0x01
 #define MLX90395_REG_0 0x0
 #define MLX90395_REG_1 0x2
@@ -19,6 +20,7 @@ enum {
   MLX90395_REG_SM = (0x30), /**> Start single-meas mode. */
   MLX90395_REG_EX = (0x80), /**> Exit mode. */
   MLX90395_REG_RT = (0xF0), /**< Reset. */
+  MLX90395_REG_CM = (0x10), /**< Start continuous-meas mode. */
 };
 
 typedef enum mlx90393_osr {
@@ -50,6 +52,8 @@ public:
   bool reset(void);
   bool exitMode(void);
   bool startSingleMeasurement(void);
+  bool startContinuousMeasurement(bool z, bool y, bool x, bool temp);
+  bool stopContinuousMeasurement(void);
   bool readMeasurement(float *x, float *y, float *z);
   bool readMeasurementWithTemp(float *x, float *y, float *z, float *temperature);
   bool readData(float *x, float *y, float *z);

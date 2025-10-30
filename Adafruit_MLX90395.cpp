@@ -283,6 +283,46 @@ bool Adafruit_MLX90395::startSingleMeasurement(void) {
 }
 
 /**
+ * Begin a continuous measurement on selected axes
+ *
+ * @param z True to measure Z axis
+ * @param y True to measure Y axis
+ * @param x True to measure X axis
+ * @param temp True to measure temperature
+ * @return True on command success
+ */
+bool Adafruit_MLX90395::startContinuousMeasurement(bool z, bool y, bool x, bool temp) {
+  uint8_t cmd = MLX90395_REG_CM;
+  if (z){
+    cmd |= 0x08;
+  }
+  if (y){
+    cmd |= 0x04;
+  }
+  if (x){
+    cmd |= 0x02;
+  }
+  if (temp){
+    cmd |= 0x01;
+  }
+  Serial.println("Command to be sent: " + String(cmd, HEX));
+  uint8_t status = command(cmd);
+  Serial.println("Status received: " + String(status, HEX));
+  bool res = (bool)(status == MLX90395_STATUS_CMMODE);
+  delay(1);
+  return res;
+}
+
+/**
+ * Stop continuous measurement mode
+ *
+ * @return True on command success
+ */
+bool Adafruit_MLX90395::stopContinuousMeasurement(void) {
+  return (command(MLX90395_REG_EX) == 0);
+}
+
+/**
  * Get the current oversampling setting
  * @return MLX90395_OSR_1, MLX90395_OSR_2, MLX90395_OSR_4, or MLX90395_OSR_8
  */
