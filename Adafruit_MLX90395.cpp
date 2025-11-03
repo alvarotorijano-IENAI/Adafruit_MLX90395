@@ -54,11 +54,6 @@ bool Adafruit_MLX90395::_init(void) {
   delay(10);
 
   _gain = getGain();
-  if (_gain == 8) { // default high field gain
-    _uTLSB = 7.14;
-  } else {
-    _uTLSB = 2.5; // medium field gain
-  }
 
   _resolution = getResolution();
 
@@ -164,10 +159,9 @@ bool Adafruit_MLX90395::readMeasurement(float *x, float *y, float *z) {
   *y = yi;
   *z = zi;
 
-  // multiply by gain & LSB
-  *x *= gainMultipliers[_gain] * _uTLSB;
-  *y *= gainMultipliers[_gain] * _uTLSB;
-  *z *= gainMultipliers[_gain] * _uTLSB;
+  *x *= mlx90395_lsb_lookup[_gain][_resolution];
+  *y *= mlx90395_lsb_lookup[_gain][_resolution];
+  *z *= mlx90395_lsb_lookup[_gain][_resolution];
 
   return true;
 }
@@ -220,10 +214,10 @@ bool Adafruit_MLX90395::readMeasurementWithTemp(float *x, float *y, float *z, fl
   *z = zi;
 
   // multiply by gain & LSB
-  *x *= gainMultipliers[_gain] * _uTLSB;
-  *y *= gainMultipliers[_gain] * _uTLSB;
-  *z *= gainMultipliers[_gain] * _uTLSB;
-
+  *x *= mlx90395_lsb_lookup[_gain][_resolution];
+  *y *= mlx90395_lsb_lookup[_gain][_resolution];
+  *z *= mlx90395_lsb_lookup[_gain][_resolution];
+  
   // Convert temperature: MLX9039x temperature conversion formula (datasheet)
   *temperature = ((float)ti) / 50.0f;
 
@@ -475,7 +469,6 @@ void Adafruit_MLX90395::getSensor(sensor_t *sensor) {
   sensor->min_delay = 0;
   sensor->min_value = -120000; // -120 gauss in uTesla
   sensor->max_value = 120000;  // +120 gauss in uTesla
-  sensor->resolution = _uTLSB; // 240/16-bit uTesla per LSB
 }
 
 /**************************************************************************/
