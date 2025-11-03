@@ -37,6 +37,18 @@ typedef enum mlx90393_res {
   MLX90395_RES_19,
 } mlx90393_res_t;
 
+/** Digital filter settings for REG_1 register. */
+typedef enum mlx90395_filter {
+  MLX90395_FILTER_0,
+  MLX90395_FILTER_1,
+  MLX90395_FILTER_2,
+  MLX90395_FILTER_3,
+  MLX90395_FILTER_4,
+  MLX90395_FILTER_5,
+  MLX90395_FILTER_6,
+  MLX90395_FILTER_7,
+} mlx90395_filter_t;
+
 static const float gainMultipliers[16] = {
     0.2, 0.25,  0.3333, 0.4, 0.5,  0.6, 0.75,  1,
     0.1, 0.125, 0.1667, 0.2, 0.25, 0.3, 0.375, 0.5};
@@ -66,6 +78,8 @@ public:
   bool setResolution(mlx90393_res_t resval);
   uint8_t getGain(void);
   bool setGain(uint8_t gainval);
+  bool setFilter(uint8_t filterVal);
+  uint8_t getFilter(void);
 
   void getSensor(sensor_t *sensor);
   bool getEvent(sensors_event_t *event);

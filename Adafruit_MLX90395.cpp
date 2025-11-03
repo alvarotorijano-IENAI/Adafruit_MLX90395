@@ -440,6 +440,21 @@ bool Adafruit_MLX90395::readRegister(uint8_t reg, uint16_t *data) {
   return true;
 }
 
+  bool Adafruit_MLX90395::setFilter(uint8_t filterVal){
+    Adafruit_BusIO_Register reg1 =
+        Adafruit_BusIO_Register(i2c_dev, MLX90395_REG_1, 2, MSBFIRST);
+    Adafruit_BusIO_RegisterBits filter_bits =
+        Adafruit_BusIO_RegisterBits(&reg1, 3, 2);
+    return filter_bits.write(filterVal);
+  }
+  uint8_t Adafruit_MLX90395::getFilter(void){
+    Adafruit_BusIO_Register reg1 =
+        Adafruit_BusIO_Register(i2c_dev, MLX90395_REG_1, 2, MSBFIRST);
+    Adafruit_BusIO_RegisterBits filter_bits =
+        Adafruit_BusIO_RegisterBits(&reg1, 3, 2);
+    return filter_bits.read();
+  }
+
 /**************************************************************************/
 /*!
     @brief  Gets the sensor_t device data, Adafruit Unified Sensor format
